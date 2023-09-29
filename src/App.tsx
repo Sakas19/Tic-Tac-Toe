@@ -5,6 +5,9 @@ const initialBoard = Array(9).fill(null);
 const App: React.FC = () => {
   const [board, setBoard] = useState<string[]>(initialBoard);
   const [xIsNext, setXIsNext] = useState<boolean>(true);
+  const [xScore, setXScore] = useState<number>(0);
+  const [oScore, setOScore] = useState<number>(0);
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
 
   const calculateWinner = (squares: string[]): string | null => {
     const lines = [
@@ -26,6 +29,8 @@ const App: React.FC = () => {
   };
 
   const handleClick = (i: number) => {
+    if (isGameOver) return; 
+
     const newBoard = [...board];
     if (calculateWinner(newBoard) || newBoard[i]) {
       return;
@@ -33,16 +38,34 @@ const App: React.FC = () => {
     newBoard[i] = xIsNext ? 'X' : 'O';
     setBoard(newBoard);
     setXIsNext(!xIsNext);
+
+    const winner = calculateWinner(newBoard);
+    if (winner) {
+      if (winner === 'X') {
+        setXScore(xScore + 1);
+      } else if (winner === 'O') {
+        setOScore(oScore + 1);
+      }
+      setIsGameOver(true); 
+    }
+  };
+
+  const handleNewGame = () => {
+    setBoard(initialBoard);
+    setXIsNext(true);
+    setIsGameOver(false);
   };
 
   const winner = calculateWinner(board);
   const status = winner ? `Winner: ${winner}` : `Next player: ${xIsNext ? 'X' : 'O'}`;
 
   const renderSquare = (i: number) => (
-    <button onClick={() => handleClick(i)}
-    className={`${
-      board[i] === 'X' ? 'first-color' : board[i] === 'O' ? 'second-color' : ''
-    } w-16 h-16 bg-white border border-gray-300`}>
+    <button
+      onClick={() => handleClick(i)}
+      className={`${
+        board[i] === 'X' ? 'first-color' : board[i] === 'O' ? 'second-color' : ''
+      } w-16 h-16 bg-white border border-gray-300`}
+    >
       {board[i]}
     </button>
   );
@@ -80,6 +103,16 @@ const App: React.FC = () => {
       </div>
       <div className="mt-4 text-xl font-semibold text-center">
         {status}
+      </div>
+      <div className="mt-4 text-center">
+        <p>Player X Score: {xScore}</p>
+        <p>Player O Score: {oScore}</p>
+        <button
+          onClick={handleNewGame}
+          className="mt-4 p-2 bg-blue text-white rounded-md hover:bg-blue-600"
+        >
+          New Game
+        </button>
       </div>
     </div>
   );
